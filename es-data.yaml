@@ -11,18 +11,6 @@ spec:
       labels:
         component: elasticsearch
         role: data
-      annotations:
-        pod.beta.kubernetes.io/init-containers: '[
-          {
-          "name": "sysctl",
-            "image": "busybox",
-            "imagePullPolicy": "IfNotPresent",
-            "command": ["sysctl", "-w", "vm.max_map_count=262144"],
-            "securityContext": {
-              "privileged": true
-            }
-          }
-        ]'
     spec:
       containers:
       - name: es-data
@@ -31,8 +19,7 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: quay.io/pires/docker-elasticsearch-kubernetes:5.1.1
-        imagePullPolicy: Always
+        image: vganapv1/docker-elasticsearch-kubernetes:1.1
         env:
         - name: NAMESPACE
           valueFrom:
@@ -42,12 +29,14 @@ spec:
           value: "myesdb"
         - name: NODE_MASTER
           value: "false"
-        - name: NODE_INGEST
-          value: "false"
         - name: HTTP_ENABLE
           value: "false"
-        - name: "ES_JAVA_OPTS"
-          value: "-Xms256m -Xmx256m"
+        - name: ES_JAVA_OPTS
+          value: "-Xms500m -Xmx500m"
+        - name: MAX_LOCAL_STORAGE_NODES
+          value: "15"
+        - name: ADD_LOCK_ID_TO_CUSTOM_PATH
+          value: "false"
         ports:
         - containerPort: 9300
           name: transport
@@ -56,6 +45,6 @@ spec:
         - name: storage
           mountPath: /data
       volumes:
-          - emptyDir:
-              medium: ""
-            name: "storage"
+        - name: "storage"
+          hostPath:
+            path: /elasticsearch
