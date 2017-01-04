@@ -1,19 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: es-client
+  name: es-data
   labels:
     component: elasticsearch
-    role: client
+    role: data
 spec:
   template:
     metadata:
       labels:
         component: elasticsearch
-        role: client
+        role: data
     spec:
       containers:
-      - name: es-client
+      - name: es-data
         securityContext:
           privileged: true
           capabilities:
@@ -29,20 +29,15 @@ spec:
           value: "myesdb"
         - name: NODE_MASTER
           value: "false"
-        - name: NODE_DATA
-          value: "false"
         - name: HTTP_ENABLE
-          value: "true"
+          value: "false"
         - name: ES_JAVA_OPTS
           value: "-Xms500m -Xmx500m"
-        - name: "MAX_LOCAL_STORAGE_NODES"
+        - name: MAX_LOCAL_STORAGE_NODES
           value: "15"
-        - name: "ADD_LOCK_ID_TO_CUSTOM_PATH"
+        - name: ADD_LOCK_ID_TO_CUSTOM_PATH
           value: "false"
         ports:
-        - containerPort: 9200
-          name: http
-          protocol: TCP
         - containerPort: 9300
           name: transport
           protocol: TCP
