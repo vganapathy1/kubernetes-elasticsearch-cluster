@@ -1,0 +1,33 @@
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-es-data-0
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-es-data-1
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-es-data-2
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

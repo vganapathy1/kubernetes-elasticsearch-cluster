@@ -1,17 +1,32 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: es-data
   labels:
     component: elasticsearch
     role: data
 spec:
+  serviceName: "es-data"
+  replicas: 3
   template:
     metadata:
       labels:
         component: elasticsearch
         role: data
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+          {
+          "name": "sysctl",
+            "image": "busybox",
+            "imagePullPolicy": "IfNotPresent",
+            "command": ["sysctl", "-w", "vm.max_map_count=262144"],
+            "securityContext": {
+              "privileged": true
+            }
+          }
+        ]'
     spec:
+      terminationGracePeriodSeconds: 10
       containers:
       - name: es-data
         securityContext:
@@ -19,7 +34,9 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: vganapv1/docker-elasticsearch-kubernetes:1.1
+#        image:  quay.io/pires/docker-elasticsearch-kubernetes:5.1.1_1
+        image: vasgendocker/docker-elasticsearch-kubernetes:5.2.1
+        imagePullPolicy: IfNotPresent
         env:
         - name: NAMESPACE
           valueFrom:
@@ -28,6 +45,8 @@ spec:
         - name: "CLUSTER_NAME"
           value: "myesdb"
         - name: NODE_MASTER
+          value: "false"
+        - name: NODE_INGEST
           value: "false"
         - name: HTTP_ENABLE
           value: "false"
@@ -42,9 +61,14 @@ spec:
           name: transport
           protocol: TCP
         volumeMounts:
-        - name: storage
-          mountPath: /data
-      volumes:
-        - name: "storage"
-          hostPath:
-            path: /elasticsearch
+        - name: nfs
+          mountPath: /data/
+  volumeClaimTemplates:
+  - metadata:
+      name: nfs
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+
